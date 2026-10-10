@@ -10,6 +10,8 @@ import { ImpactView, StatusBadge } from "@/components/impact";
 import { DEMO_RESULT as R } from "@/lib/demo";
 import { contaminationFlows, locationStats, recommendation } from "@/lib/leak-analytics";
 import { measureImpact } from "@/lib/impact";
+import { scoreMeaning } from "@/lib/mock-analysis";
+import { ConfidenceBadge } from "@/components/confidence-badge";
 import { todayISO } from "@/lib/interventions";
 
 const STEPS = ["Upload photo", "AI analysis", "Recovery Score", "Detect contamination", "Identify hotspot", "Recommend", "Measure improvement"];
@@ -52,7 +54,7 @@ function Score() {
   return (
     <div><Title n={3} t="Waste Recovery Score" d="One number for how much of this bin can actually be recovered." />
       <div className="grid items-center gap-6 sm:grid-cols-[auto_1fr]">
-        <div><ScoreRing score={R.recoveryScore} band={R.band} /><p className="mt-2 text-center font-display text-lg font-bold" style={{ color: BAND[R.band].c }}>{BAND[R.band].label}</p></div>
+        <div><ScoreRing score={R.recoveryScore} band={R.band} /><p className="mt-2 text-center font-display text-lg font-bold" style={{ color: BAND[R.band].c }}>{BAND[R.band].label}</p><div className="mt-1 text-center"><ConfidenceBadge label={R.confidenceLabel} score={R.confidenceScore} /></div><p className="mt-2 max-w-[12rem] text-center text-xs text-muted">{scoreMeaning(R.band)}</p></div>
         <ul className="space-y-2.5">{R.composition.map((c, i) => (
           <li key={c.material}><div className="flex justify-between text-sm"><span>{c.material}</span><span className="font-semibold">{c.percent}%</span></div>
             <div className="mt-1 h-2.5 overflow-hidden rounded-full bg-mist"><motion.div className="h-full rounded-full" style={{ background: BAR[c.material] }} initial={{ width: 0 }} animate={{ width: `${c.percent}%` }} transition={{ delay: i * 0.08 }} /></div></li>))}</ul>
@@ -71,7 +73,7 @@ function Contam() {
         <p className="flex items-center gap-2 font-semibold text-warn"><AlertTriangle className="h-5 w-5" />Contamination &amp; hazard risk: severe</p>
         <ul className="mt-2 list-disc pl-5 text-sm text-warn">{R.contamination.hazards.map((h) => <li key={h}>{h}</li>)}</ul>
       </div>
-      <p className="mt-4 text-sm">{R.diagnosis}</p>
+      <div className="mt-4 space-y-1.5 text-sm">{R.diagnosis.split("\n").map((p) => <p key={p}>{p}</p>)}</div>
     </div>
   );
 }
@@ -118,12 +120,12 @@ export default function DemoPage() {
             {k < STEPS.length - 1 && <span className={`mx-1 h-0.5 flex-1 ${k < i ? "bg-secondary" : "bg-line"}`} />}</li>))}</ol>
         <p className="mt-3 text-sm font-semibold text-primary">Step {i + 1} of {STEPS.length} · {STEPS[i]}</p>
       </nav>
-      <Card className="mt-5 min-h-[26rem]"><AnimatePresence mode="wait"><motion.div key={i} initial={{ opacity: 0, x: 24 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -24 }} transition={{ duration: 0.25 }}>{views[i]}</motion.div></AnimatePresence></Card>
+      <Card className="mt-5 min-h-[26rem]"><AnimatePresence mode="wait"><motion.div key={i} initial={{ opacity: 0, x: 24 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -24 }} transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}>{views[i]}</motion.div></AnimatePresence></Card>
       <div className="mt-6 flex flex-wrap justify-between gap-3">
         <Button variant="outline" onClick={() => setI(i - 1)} disabled={i === 0}><ArrowLeft className="h-4 w-4" />Previous</Button>
         {last ? (
           <div className="flex flex-wrap gap-3">
-            <Button variant="outline" onClick={() => setI(0)}><RotateCcw className="h-4 w-4" />Restart</Button>
+            <Button variant="outline" onClick={() => setI(0)}><RotateCcw className="h-4 w-4" />Restart demo</Button>
             <Link href={`/bincheck?location=Hostel%20C&desc=${encodeURIComponent(rec.intervention)}`}><Button>Track this in BinCheck <ArrowRight className="h-4 w-4" /></Button></Link>
           </div>) : <Button onClick={() => setI(i + 1)}>Next <ArrowRight className="h-4 w-4" /></Button>}
       </div>

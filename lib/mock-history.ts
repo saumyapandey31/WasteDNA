@@ -1,6 +1,6 @@
 import type { Location } from "@/types/waste";
 import type { ContaminationFlow, LocationHistory } from "@/types/leak";
-import { LOCATIONS } from "./mock-analysis";
+import { LOCATIONS } from "./analysis-core";
 
 export const DAYS = 30;
 // score/contam: 30-day mean; kg: daily waste; dry: recyclable share of waste; slope: score change per day.

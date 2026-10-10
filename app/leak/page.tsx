@@ -91,6 +91,7 @@ function LeakInner() {
         className="rounded-2xl bg-gradient-to-br from-primary to-secondary p-6 text-white shadow-soft sm:p-10">
         <div className="flex items-center gap-2 text-sm font-semibold text-[#C8E6C9]"><Lightbulb className="h-4 w-4" />Recommended intervention · {rec.location}</div>
         <p className="mt-3 max-w-3xl font-display text-xl leading-relaxed sm:text-2xl">{rec.headline}</p>
+        <p className="mt-4 inline-block rounded-full bg-white/15 px-4 py-1.5 text-sm font-semibold tracking-wide">Estimated uplift: {rec.gainRange[0]}–{rec.gainRange[1]}% more recoverable material</p>
         <div className="mt-6 grid gap-6 md:grid-cols-2">
           <ul className="space-y-2 text-sm">{rec.actions.map((a) => <li key={a} className="flex gap-2"><CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-[#C8E6C9]" />{a}</li>)}</ul>
           {rec.next.length > 0 && <div className="text-sm"><p className="font-semibold text-[#C8E6C9]">Next priorities</p><ul className="mt-2 list-disc space-y-1 pl-5">{rec.next.map((n) => <li key={n}>{n}</li>)}</ul></div>}
@@ -111,8 +112,9 @@ function Spark({ data, className }: { data: number[]; className?: string }) {
 type SortKey = "severity" | "avgScore" | "contaminationRate" | "lostKg";
 function Ranking({ stats, focus }: { stats: LocationStats[]; focus: Location | null }) {
   const [key, setKey] = useState<SortKey>("severity");
+  const [chip, setChip] = useState<"All" | LeakStatus>("All");
   const [desc, setDesc] = useState(true);
-  const rows = [...stats].sort((a, b) => (desc ? b[key] - a[key] : a[key] - b[key]));
+  const rows = [...stats].filter((s) => chip === "All" || s.status === chip).sort((a, b) => (desc ? b[key] - a[key] : a[key] - b[key]));
   const toggle = (k: SortKey) => { if (k === key) setDesc(!desc); else { setKey(k); setDesc(k !== "avgScore"); } };
   const H = ({ k, children }: { k: SortKey; children: React.ReactNode }) => (
     <th className="px-4 py-3 text-left"><button onClick={() => toggle(k)} className="inline-flex items-center gap-1 font-semibold hover:text-primary">{children}<ArrowUpDown className={cn("h-3.5 w-3.5", key === k && "text-accent")} /></button></th>
@@ -121,6 +123,11 @@ function Ranking({ stats, focus }: { stats: LocationStats[]; focus: Location | n
     <section>
       <h2 className="font-display text-2xl font-bold text-primary">Location performance ranking</h2>
       <p className="mt-1 text-muted">Sorted by severity by default. Select a column to re-sort.</p>
+      <div className="mt-4 flex flex-wrap gap-2" role="group" aria-label="Filter by status">
+        {(["All", "Hotspot", "Watch", "Good"] as const).map((c) => (
+          <button key={c} onClick={() => setChip(c)} aria-pressed={chip === c} className={cn("rounded-full border px-4 py-1.5 text-sm font-semibold tracking-wide transition-colors", chip === c ? "border-primary bg-primary text-white" : "border-line bg-white text-primary hover:bg-mist")}>
+            {c} <span className="opacity-70">{c === "All" ? stats.length : stats.filter((s) => s.status === c).length}</span></button>))}
+      </div>
       <Card className="mt-5 overflow-hidden p-0"><div className="overflow-x-auto">
         <table className="w-full min-w-[640px] text-sm">
           <thead className="bg-mist text-muted"><tr>
@@ -128,7 +135,7 @@ function Ranking({ stats, focus }: { stats: LocationStats[]; focus: Location | n
             <H k="avgScore">Avg Recovery Score</H><H k="contaminationRate">Contamination Rate</H><H k="lostKg">Est. Material Lost</H>
             <H k="severity">Status</H>
           </tr></thead>
-          <tbody>{rows.map((r) => (
+          <tbody>{rows.length === 0 && <tr><td colSpan={5} className="px-4 py-8 text-center text-muted">No locations match this filter. <button onClick={() => setChip("All")} className="font-semibold text-secondary underline">Show all</button></td></tr>}{rows.map((r) => (
             <tr key={r.location} className={cn("border-t border-line", focus === r.location && "bg-mist")}>
               <td className="px-4 py-3 font-semibold">{r.location}</td>
               <td className={cn("px-4 py-3 font-bold", scoreColor(r.avgScore))}>{r.avgScore}<span className="font-normal text-muted"> /100</span></td>

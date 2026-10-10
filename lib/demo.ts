@@ -9,5 +9,7 @@ export const DEMO_RESULT: AnalysisResult = {
   recoverablePercent: 32,
   contamination: { present: true, level: "severe", hazards: ["Oily food residue on paper and plastic", "Takeaway boxes with leftovers still inside"],
     summary: "Contamination is reducing what can be recovered. Separate wet and hazardous items at the source." },
-  diagnosis: "This bin has a low Recovery Score because food waste is contaminating recyclable material. Takeaway containers from the cafeteria are arriving with leftovers still inside.",
+  diagnosis: ["Main problem: food waste (36%) is mixed in with plastic and paper.", "This bin has a low Recovery Score because food waste is contaminating recyclable material.", "Next action: separate food waste at the cafeteria exit, then re-scan this bin in a week."].join("\n"),
+  confidenceScore: 88, confidenceLabel: "High", confidenceFactors: ["Location profile selected", "Photo size is reasonable", "No colour-heuristic conflict"],
+  calculationNotes: "Dry recyclables 48% − food penalty 16.2 = recoverable 32%. Score = 32×1.1 − 36×0.4 − 2×2 = 17.",
 };

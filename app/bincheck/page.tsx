@@ -13,7 +13,7 @@ import { locationStats } from "@/lib/leak-analytics";
 import { currentSegregation, measureImpact } from "@/lib/impact";
 import { todayISO, useInterventions } from "@/lib/interventions";
 import type { Location } from "@/types/waste";
-import { cn } from "@/lib/utils";
+import { cn, uid } from "@/lib/utils";
 
 const field = "mt-1 w-full rounded-lg border border-line bg-white px-3 py-2.5 text-sm";
 const segColor = (s: number) => (s >= 70 ? "text-secondary" : s >= 45 ? "text-amber-700" : "text-warn");
@@ -42,7 +42,7 @@ function BinCheckInner() {
     if (!start) err.start = "Set a start date.";
     setErrors(err);
     if (Object.keys(err).length) return toast("Please fix the highlighted fields.", "error");
-    const id = crypto.randomUUID();
+    const id = uid();
     add({ id, location: location as Location, description: desc.trim(), startDate: start, createdAt: new Date().toISOString() });
     setSelId(id); setDesc("");
     toast(`Intervention recorded for ${location}.`, "success");
@@ -70,7 +70,7 @@ function BinCheckInner() {
                 <p className={cn("mt-2 font-display text-4xl font-bold", segColor(seg[s.location]))}>{seg[s.location]}<span className="text-base font-normal text-muted"> /100</span></p>
                 <div className="mt-3 flex items-center justify-between text-xs text-muted">
                   <span>{items?.filter((x) => x.location === s.location).length ?? 0} intervention(s)</span>
-                  <a href="#record" onClick={() => setLocation(s.location)} className="font-semibold text-secondary underline">Track intervention</a>
+                  <span className="flex gap-3"><Link href={`/analyze?location=${encodeURIComponent(s.location)}`} className="font-semibold text-secondary underline">Scan</Link><a href="#record" onClick={() => setLocation(s.location)} className="font-semibold text-secondary underline">Track intervention</a></span>
                 </div>
               </Card>
             </motion.div>
@@ -109,11 +109,13 @@ function BinCheckInner() {
         <div className="mt-5">
           {items === null && <Card className="grid min-h-48 place-items-center"><Loader2 className="h-8 w-8 animate-spin text-accent" aria-label="Loading" /></Card>}
           {items?.length === 0 && (
-            <Card className="grid min-h-48 place-items-center text-center">
-              <div><ClipboardCheck className="mx-auto h-10 w-10 text-secondary" />
-                <p className="mt-3 font-semibold">No interventions tracked yet</p>
-                <p className="text-sm text-muted">Record one above, or start from the recommendation in WasteLeak.</p>
-                <Link href="/leak" className="mt-3 inline-block text-sm font-semibold text-secondary underline">Open WasteLeak</Link></div>
+            <Card className="grid min-h-64 place-items-center text-center">
+              <div className="max-w-md">
+                <svg viewBox="0 0 160 110" className="mx-auto h-28" aria-hidden="true"><rect x="10" y="80" width="140" height="6" rx="3" fill="#C8E6C9" /><path d="M20 70 L55 50 L85 58 L125 24" fill="none" stroke="#43A047" strokeWidth="5" strokeLinecap="round" strokeLinejoin="round" /><circle cx="125" cy="24" r="9" fill="#2E7D32" /><circle cx="20" cy="70" r="6" fill="#E65100" /></svg>
+                <p className="mt-3 font-display text-lg font-bold text-primary">No interventions tracked yet</p>
+                <p className="mt-1 text-sm text-muted">Record what you changed and BinCheck shows whether the Recovery Score improved. It is measured once scans exist after the start date, and simulated before that.</p>
+                <div className="mt-4 flex flex-wrap justify-center gap-3"><a href="#record"><Button>Record your first intervention</Button></a><Link href="/leak"><Button variant="outline">See WasteLeak recommendation</Button></Link></div>
+              </div>
             </Card>)}
           {items && items.length > 0 && sel && impact && (
             <div className="space-y-6">
@@ -123,7 +125,7 @@ function BinCheckInner() {
               </div>
               <ImpactView impact={impact} location={sel.location} description={sel.description} startDate={sel.startDate} />
               <div className="flex flex-wrap gap-3">
-                <Link href="/analyze"><Button variant="outline"><Camera className="h-4 w-4" />Scan {sel.location} again</Button></Link>
+                <Link href={`/analyze?location=${encodeURIComponent(sel.location)}`}><Button variant="outline"><Camera className="h-4 w-4" />Scan {sel.location} again</Button></Link>
                 <Button variant="outline" onClick={() => { remove(sel.id); setSelId(null); toast("Intervention removed.", "info"); }}><Trash2 className="h-4 w-4" />Remove</Button>
               </div>
             </div>)}

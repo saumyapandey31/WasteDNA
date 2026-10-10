@@ -1,6 +1,6 @@
 "use client";
 import { createContext, useCallback, useContext, useState } from "react";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, MotionConfig, motion } from "framer-motion";
 import { AlertTriangle, CheckCircle2, Info } from "lucide-react";
 import { cn } from "@/lib/utils";
 type Kind = "success" | "error" | "info";
@@ -15,7 +15,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
     setTimeout(() => setItems((i) => i.filter((x) => x.id !== id)), 3500);
   }, []);
   return (
-    <Ctx.Provider value={push}>
+    <MotionConfig reducedMotion="user"><Ctx.Provider value={push}>
       {children}
       <div aria-live="polite" className="pointer-events-none fixed inset-x-4 bottom-4 z-[60] flex flex-col items-end gap-2">
         <AnimatePresence>
@@ -26,6 +26,6 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
             </motion.div>); })}
         </AnimatePresence>
       </div>
-    </Ctx.Provider>
+    </Ctx.Provider></MotionConfig>
   );
 }

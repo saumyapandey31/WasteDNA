@@ -7,7 +7,7 @@ const config: Config = {
       mist: "#F1F8E9", line: "#C8E6C9", ink: "#212121", muted: "#616161",
       warn: "#E65100", amber: { score: "#F9A825" },
     },
-    fontFamily: { sans: ["system-ui", "-apple-system", "Segoe UI", "Roboto", "sans-serif"], display: ["Georgia", "Cambria", "Times New Roman", "serif"] },
+    fontFamily: { sans: ["var(--font-inter)", "system-ui", "sans-serif"], display: ["var(--font-display)", "system-ui", "sans-serif"] },
     boxShadow: { soft: "0 8px 30px -12px rgba(27,94,32,0.25)" },
   } },
   plugins: [],

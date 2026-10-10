@@ -1,6 +1,9 @@
 "use client";
-import { ArrowDown, ArrowUp, Minus, Sparkles, CheckCircle2 } from "lucide-react";
+import { ArrowDown, ArrowUp, Download, Minus, Sparkles, CheckCircle2 } from "lucide-react";
 import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { useToast } from "@/components/toast";
+import { downloadText, impactSummaryText } from "@/lib/export";
 import { cn } from "@/lib/utils";
 import { fmtDate } from "@/lib/interventions";
 import type { Impact } from "@/lib/impact";
@@ -31,6 +34,7 @@ function Chart({ impact }: { impact: Impact }) {
 }
 
 export function ImpactView({ impact, location, description, startDate }: { impact: Impact; location: string; description: string; startDate: string }) {
+  const toast = useToast();
   const sim = impact.mode === "simulated", { before: b, after: a, delta: d } = impact;
   const nodes = [
     { t: "Before", s: "7 days before start", v: `Score ${b.score}`, c: "bg-warn" },
@@ -44,11 +48,12 @@ export function ImpactView({ impact, location, description, startDate }: { impac
   ];
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-center gap-3">
-        <h3 className="font-display text-xl font-semibold text-primary">{location}</h3>
-        {sim
-          ? <span className="inline-flex items-center gap-1 rounded-full border border-amber-300 bg-amber-50 px-3 py-0.5 text-xs font-semibold text-amber-800"><Sparkles className="h-3.5 w-3.5" />Simulated</span>
-          : <span className="inline-flex items-center gap-1 rounded-full border border-line bg-mist px-3 py-0.5 text-xs font-semibold text-secondary"><CheckCircle2 className="h-3.5 w-3.5" />Measured</span>}
+      <div className={cn("flex flex-wrap items-center gap-4 rounded-2xl border-2 p-4", sim ? "border-amber-300 bg-amber-50" : "border-line bg-mist")}>
+        <span className={cn("inline-flex items-center gap-2 rounded-full px-4 py-2 text-base font-bold tracking-wide", sim ? "bg-amber-400 text-ink" : "bg-secondary text-white")}>
+          {sim ? <Sparkles className="h-5 w-5" /> : <CheckCircle2 className="h-5 w-5" />}{sim ? "SIMULATED" : "MEASURED"}</span>
+        <div className="min-w-0 flex-1"><h3 className="font-display text-xl font-bold text-primary">{location}</h3>
+          <p className="text-sm text-muted">{sim ? "Estimated result. No scans after the start date yet." : `Based on ${impact.daysTracked} days of data after the start date.`}</p></div>
+        <Button variant="outline" className="px-4 py-2" onClick={() => { downloadText(`bincheck-${location.replace(/\s+/g, "-").toLowerCase()}.txt`, impactSummaryText(impact, location, description, startDate)); toast("Summary downloaded.", "success"); }}><Download className="h-4 w-4" />Download summary</Button>
       </div>
       <Card>
         <ol className="grid gap-4 sm:grid-cols-3">

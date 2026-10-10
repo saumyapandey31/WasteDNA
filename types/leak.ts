@@ -11,3 +11,4 @@ export interface Recommendation {
   location: Location; sharePct: number; source: Location; material: string;
   headline: string; intervention: string; gainRange: [number, number]; actions: string[]; next: string[];
 }
+export interface Intervention { id: string; location: Location; description: string; startDate: string; createdAt: string }
